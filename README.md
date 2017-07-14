@@ -14,8 +14,9 @@
 patch
 - **make repack**：对拆分到方法级的 smali 文件进行合并并重新打包成 jar 包
 - **make package**：生成最终的 OTA 刷机包
--  **make incpatch**：将新版本 TOS patch 到已经适配好的目标机型的 TOS 上
--  **make incpackage**：针对新版本 TOS 重新将上一个 patch 好的版本重新打包
+- **make syncpatch**:用于framework更新后的patch，不改变开发者对原厂smali文件的修改
+- **make incpatch**：将新版本 TOS patch 到已经适配好的目标机型的 TOS 上
+- **make incpackage**：针对新版本 TOS 重新将上一个 patch 好的版本重新打包
 - **make clean**： 执行清理操作
 
 -------------------
@@ -28,18 +29,6 @@ patch
 ```
 git clone https://github.com/TOSPlus/TPS
 ```
-
--------------------
-**更改脚本权限**
-
-由于脚本文件在上传和下载过程中，文件的权限信息被修改，因此我们需要修改一下可执行权限，否则后续可能会出现“Permission denied......”等相关错误。
-
-> 在TPS根目录执行 :
-
-```
-chmod -R 755 build/tools/*
-```
-
 -------------------
 **实战**
 - **导入环境变量** 
@@ -51,7 +40,7 @@ chmod -R 755 build/tools/*
 - **配置N900的环境** 
 > 在TPS根目录再次执行
 
-		make create brand=Samsung device=N900（xxx为要适配的机型名称）
+		make create brand=Samsung device=N900（要适配的机型名称）
 
 将要适配机型的N900.zip包放到device/N900目录下，重命名或链接为ota.zip，要求有system目录和boot.img文件。
 注意 ：N900的ota包的获取，需要获取机型原底包的odex经过优化的包，而TOS在创建机型目录的时候，会在机型的根目录下生成一个N900.zip，这个是经过odex优化的。这个包里面只有一个system文件夹，这个包需要再放入一个N900原厂的boot.img文件到N900.zip包的根目录。这个就可以用来作为ota包使用。
@@ -155,3 +144,44 @@ N900.zip*    smali/    target_files/    target_files.zip
 ------
 
 [解决方法](https://github.com/TOSPlus/TPS/blob/master/Fix_Reject.md)
+
+
+TencentOS更新日记：
+------
+Hi，亲爱的TOS小伙伴们，本周更新版本来啦，感谢大家一直以来的支持！ 
+
+
+更新说明：
+1. 首次刷机的吐司们，请在论坛下载版块download相应机型的完整包
+2. 正使用TOS的吐司们，请直接OTA升级（系统更新—检测更新—安装）
+3. TOS目前已适配的机型，请猛戳论坛机型下载专区 
+
+【桌面】
+优化  桌面壁纸循环滚屏效果
+优化  桌面顶部栏增加更改颜色功能
+修复  更新应用进度条可能概率性不消失的问题
+修复  dock栏上第三方应用概率性不能自动下载的问题
+
+【主题】
+新增  主题《深圳》、《春》、《好基友》、《时间旅行》
+
+【短信】
+优化  部分情景短信的布局
+修复  部分不识别成卡片的短信
+
+【相册】
+修复  通过便签进入最近照片，图片不停加载的问题
+
+【便签】
+修复  快速地反复进入图片便签详情界面，图片可能加载失败的问题
+
+
+
+【因为有你，TOS才有无限可能】
+感谢所有参加TOS开放测试的用户！感谢0405版本积极反馈并协助修复问题的用户：
+宇_FtUV6T、_Ylr9iR、雨中漫步_wpBHvA、凌xue、ddawx123、小菜、Jo_YXqaLt、马思远、再见北回归线、W.eng、ddawx123、Clive、_4grfTf、半夏花零落、Eternal、秀丝美艺、源_r6Zfnm
+
+
+
+
+

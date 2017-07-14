@@ -3,9 +3,9 @@
 # for debug
 #set -x
 
+
 if [ $# -lt 1 ]; then
-    echo "usage: $0 device_name"
-    echo "notice: you should also export PORT_CONFIG and PORT_DEVICE env variable"
+    echo "usage: $0 device_name "
     exit 1
 fi
 
@@ -21,7 +21,9 @@ if [ $? -ne 0 ]; then
 fi
 
 DEVICE_NAME=$1
-SUITABLE_DEVICES=$2
+RECOVERY_DEVICE_ASSERT=$2
+DESINTY=$3
+SUITABLE_DEVICES=$4
 DEVICE_ROOT=$PORT_DEVICE/$DEVICE_NAME
 PACKAGE_PATH=$DEVICE_ROOT/package
 BOOT_PATH=$DEVICE_ROOT/boot
@@ -238,7 +240,7 @@ copy_system_files_in_list()
     local DEST_DIR=$2
     local FILE_LIST=$3
     
-    while read FILE
+    while read FILE || [[ -n "$FILE" ]]
     do
         FILE=`echo "$FILE" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//'`
         if [ -z "$FILE" ]; then
@@ -330,6 +332,29 @@ prepare_system_files()
         fi
         cp -f "$SRC_FILE" "$DEST_FILE"
     done
+
+	local CUSTOM_DIST_DIR=$PORT_DEVICE/$DEVICE_NAME/out/dist
+    find "$CUSTOM_DIST_DIR" -name "*.apk" -type f 2>/dev/null | while read SRC_FILE
+    do
+        local FILE_NAME=`basename "$SRC_FILE"`
+        local DEST_FILE=`find "$DEST_DIR" -name "$FILE_NAME"`
+        if [ -z "$DEST_FILE" ]; then
+            echo "[ERROR] cannot find '$FILE_NAME' in '$DEST_DIR'"
+            exit 1
+        fi
+        cp -f "$SRC_FILE" "$DEST_FILE"
+    done
+	
+	if [ $DESINTY="1280x720" ]; then
+        local DEST_FILE=`find "$DEST_DIR" -name framework-qrom-res.apk`
+        if [ -z "$DEST_FILE" ]; then
+			echo "[ERROR] cannot find framework-qrom-res.apk to override"
+			echo "check your package/target_files/SYSTEM/framework directory"
+			exit 1
+		fi
+		cp $PORT_DEVICE/tos/extra_apk_for_adaptation/1280x720_framework-qrom-res.apk $DEST_FILE
+	fi
+
     
     # 拷贝需要覆盖的系统文件到目标目录
     if [ -d "$DEVICE_ROOT/override/system" ]; then
@@ -342,7 +367,7 @@ prepare_system_files()
         exit
     fi
     
-    while read REMOVE_FILE
+    while read REMOVE_FILE || [[ -n "$REMOVE_FILE" ]]
     do
         REMOVE_FILE=`echo "$REMOVE_FILE" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//'`
         if [ -z "$REMOVE_FILE" ]; then
@@ -934,7 +959,10 @@ generate_misc_info()
     else
         sed -i "s#selinux_fc=.*#selinux_fc=$SELINUX_FC#" "$MISC_INFO_FILE"
     fi
-    
+    #add device assertions configuration
+	sed -i "/recovery_device_assert=/d" "$MISC_INFO_FILE"
+	echo "recovery_device_assert=$RECOVERY_DEVICE_ASSERT">> "$MISC_INFO_FILE"
+	
     cp -f "$MISC_INFO_FILE" "$TARGET_PATH/META/"
     
     if [ -f "$CONFIG_PATH/recovery.fstab" ]; then
@@ -1137,3 +1165,5 @@ main()
 }
 
 main
+
+
